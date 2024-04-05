@@ -1,0 +1,10 @@
+self._num_traces  写死为1
+batch_size 好像是废代码啊
+
+init和reset时随机选择路径id（在范围里面），写个id实例变量
+参考migration_env的随机选取
+
+step函数整个注释掉，
+重写直接调用step_trace(self, trace_id, action)
+
+整理一下ac需要的env类的几个函数，以及他们的原型
