@@ -68,10 +68,12 @@ class BatchMigrationEnv(gym.Env):
             # spaces.Discrete(N)：使用 OpenAI Gym 库定义一个离散空间（Discrete space），
             # 其中包含了从 0 到 N-1 的整数，总共 N 个可能的值。在这个环境中，每个整数代表一个可选的动作。
             self._action_dim = env_parameters.num_base_station
+            self.action_space = self._action_dim
             # 动作空间(_action_spec)：根据 is_full_action 的值，环境的动作空间可以是离散空间，其大小要么是基站的数量（代表所有可能的基站迁移目标），要么是固定的数字6。
         else:
-            self._action_spec = spaces.Discrete(6)
+            self._action_spec = spaces.Discrete(6)  ## TODO 这里要改成3
             self._action_dim = 6
+            self.action_space = self._action_dim
 
         self.migration_size_low = env_parameters.migration_size_low
         self.migration_size_high = env_parameters.migration_size_high
@@ -86,9 +88,11 @@ class BatchMigrationEnv(gym.Env):
         #self._state_dim = 5 + 2 * env_parameters.num_base_station
         if self.is_full_observation:
             self._state_dim = 2 * env_parameters.num_base_station + 2
+            self.observation_space = self._state_dim
             # 如果是完全观测：状态向量包括了每个基站的两项信息（可能是例如每个基站的工作负载和可用资源等），加上两个额外的全局信息
         else:
             self._state_dim = 4
+            self.observation_space = self._state_dim
             # 如果不是完全观测：状态维度被简化为 4。这表示无论基站的数量如何，状态向量都只包含四个元素，这四个元素需要以更简化的形式来捕捉环境的当前状态。这可能是一种折衷，用于减少状态空间的复杂性，从而简化学习任务。
 
         self.server_poisson_rate = env_parameters.server_poisson_rate
@@ -159,6 +163,7 @@ class BatchMigrationEnv(gym.Env):
         # record the total trace number
         self.users_traces = self._read_traces_from_the_csv(env_parameters.traces_file_path, env_parameters.trace_start_index, self._num_traces)        # 读取一部分用户的轨迹，稀疏化
         self._current_time_slot = [0] * self._num_traces
+        self.num_envs = self._num_traces
         # 似乎没用 self.batch_size = self._num_traces        # 每个批次应该包含的轨迹（或者例子）数量与轨迹数相同
 
     def _initialize_servers_position(self):
@@ -293,6 +298,7 @@ class BatchMigrationEnv(gym.Env):
         user_position = self.users_traces[trace_id][self._current_time_slot[trace_id]]
         user_position_index = self._get_user_area_by_position(user_position)      # user目前的local server
 
+        # print("action: ", action, type(action))
         if action == None:      # 如果action是None，意味着进行reset，具体操作是跳到local server去
             service_index = user_position_index
         else:    # ？？？_state是个啥？？？
@@ -355,7 +361,7 @@ class BatchMigrationEnv(gym.Env):
         if action != None:    # action是None的时候，做reset
             if self.is_full_action:    # full action一定是true
                 service_index = action
-            else:    # 这里不会运行到
+            else:    # 这里不会运行到 TODO,不是full action，action space为3的时候
                 service_index = self._get_service_index_by_action(action, service_index, user_position_index)
 
         # state = [self._user_position_index, self._service_index ] + servers_computation_latencies + communication_costs
@@ -410,12 +416,12 @@ class BatchMigrationEnv(gym.Env):
 
         # the true state space dimension is
         self._state = np.array(batch_state, dtype=np.float32)
-        observation = np.array(batch_observation, dtype=np.float32)
+        self._observation = np.array(batch_observation, dtype=np.float32)
 
         if self.is_full_observation:
             return self._state
         else:
-            return observation
+            return self._observation
 
     def current_system_state(self):
         system_state = np.column_stack([self._user_position_index, self._service_index, self._trans_rate, self._client_required_frequency,
@@ -487,6 +493,6 @@ class BatchMigrationEnv(gym.Env):
         rewards = np.array(rewards, dtype=np.float32)
 
         if self.is_full_observation:
-            return self._state, rewards, dones, env_infos
+            return np.array(self._state), np.array(rewards), np.array(dones), np.array(env_infos)
         else:
-            return observations, rewards, dones, env_infos
+            return np.array(observations), np.array(rewards), np.array(dones), np.array(env_infos)

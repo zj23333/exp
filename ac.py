@@ -57,18 +57,20 @@ def make_envs(env_name):
         return env
     return _thunk
     
-def test_env(env,model,vis=False):
-    state,_ = env.reset()
-    if vis: env.render()
-    done = False
-    total_reward = 0
-    while not done:
+def test_env(env,model): #,vis=False):
+    state = env.reset()
+    # if vis: env.render()
+    done = [False] * env.num_envs
+    total_reward = np.zeros(env.num_envs)
+    while not done[0]:
         state = torch.FloatTensor(state).unsqueeze(0).to(cfg.device)
         dist, _ = model(state)
-        next_state, reward, done, _,_ = env.step(dist.sample().cpu().numpy()[0])
+        #print(dist.sample().cpu().numpy())
+        #print(type(dist.sample().cpu().numpy()))
+        next_state, reward, done, _ = env.step(dist.sample().cpu().numpy()[0])
         state = next_state
-        if vis: env.render()
-        total_reward += reward
+        # if vis: env.render()
+        total_reward += np.array(reward)
     return total_reward
 
 def compute_returns(next_value, rewards, masks, gamma=0.99):
@@ -83,16 +85,44 @@ def compute_returns(next_value, rewards, masks, gamma=0.99):
 def train(cfg,envs):
     print('Start training!')
     print(f'Env:{cfg.env_name}, Algorithm:{cfg.algo_name}, Device:{cfg.device}')
-    # env = gym.make(cfg.env_name) # a single env
+    # env = gym.make(cfg.env_name)   ## 初始化一个测试用 env
     # env.reset(seed=10)
-    # n_states  = envs.observation_space.shape[0]
-    # n_actions = envs.action_space.n
+    env_eval_parameters = EnvironmentParameters(trace_start_index=120,
+                                                num_traces=20,
+                                                server_frequency=128.0,  # GHz
+                                                num_base_station=number_of_base_state,
+                                                optical_fiber_trans_rate=500.0,
+                                                backhaul_coefficient=0.02,
+                                                migration_coefficient_low=1.0,
+                                                migration_coefficient_high=3.0,
+                                                server_poisson_rate=possion_rate_vector,
+                                                client_poisson_rate=2,
+                                                server_task_data_lower_bound=(0.05 * 1000.0 * 1000.0 * 8),
+                                                server_task_data_higher_bound=(5 * 1000.0 * 1000.0 * 8),
+                                                client_task_data_lower_bound=(0.05 * 1000.0 * 1000.0 * 8),
+                                                client_task_data_higher_bound=(5 * 1000.0 * 1000.0 * 8),
+                                                migration_size_low=0.5,
+                                                migration_size_high=100.0,
+                                                ratio_lower_bound=200.0,
+                                                ratio_higher_bound=10000.0,
+                                                map_width=8000.0, map_height=8000.0,
+                                                num_horizon_servers=x_base_state, num_vertical_servers=y_base_state,
+                                                traces_file_path='./environment/san_traces_coordinate.txt',
+                                                transmission_rates=[60.0, 48.0, 36.0, 24.0, 12.0],  # Mbps
+                                                trace_length=100,
+                                                trace_interval=3,
+                                                is_full_observation=False,
+                                                is_full_action=True)
+    env = BatchMigrationEnv(env_eval_parameters)  # envs是训练用的，env是测试用的
+    ### 
+    n_states  = envs.observation_space  # 在我的env里，这个observation_space和action_space都是普通的int
+    n_actions = envs.action_space
     model = ActorCritic(n_states, n_actions, cfg.hidden_dim).to(cfg.device)
     optimizer = optim.Adam(model.parameters())
     step_idx    = 0
     test_rewards = []
     test_ma_rewards = []
-    # state = envs.reset()    # 这里！
+    state = envs.reset()    # 这里！
     while step_idx < cfg.max_steps:
         log_probs = []
         values    = []
@@ -104,7 +134,7 @@ def train(cfg,envs):
             state = torch.FloatTensor(state).to(cfg.device)
             dist, value = model(state)
             action = dist.sample()
-            # next_state, reward, done, _ = envs.step(action.cpu().numpy())
+            next_state, reward, done, _ = envs.step(action.cpu().numpy()) ##
             log_prob = dist.log_prob(action)
             entropy += dist.entropy().mean()
             log_probs.append(log_prob)
@@ -113,15 +143,15 @@ def train(cfg,envs):
             masks.append(torch.FloatTensor(1 - done).unsqueeze(1).to(cfg.device))
             state = next_state
             step_idx += 1
-            if step_idx % 200 == 0:
-                test_reward = np.mean([test_env(env,model) for _ in range(10)])
+            if step_idx % 200 == 0:  # 每200个step，测试一下
+                test_reward = np.mean(test_env(env,model)) # np.mean([test_env(env,model) for _ in range(10)])
                 print(f"step_idx:{step_idx}, test_reward:{test_reward}")
                 test_rewards.append(test_reward)
                 if test_ma_rewards:
                     test_ma_rewards.append(0.9*test_ma_rewards[-1]+0.1*test_reward)
                 else:
                     test_ma_rewards.append(test_reward) 
-                # plot(step_idx, test_rewards)   
+                # 勿动，这行本来就注释掉了 plot(step_idx, test_rewards)
         next_state = torch.FloatTensor(next_state).to(cfg.device)
         _, next_value = model(next_state)
         returns = compute_returns(next_value, rewards, masks)
@@ -153,12 +183,16 @@ def plot_rewards(rewards, ma_rewards, cfg, tag='train'):
     
     
 import easydict
-from common.multiprocessing_env import SubprocVecEnv
+# from common.multiprocessing_env import SubprocVecEnv
+import batch_migration_env
+from batch_migration_env import EnvironmentParameters
+from batch_migration_env import BatchMigrationEnv
+
 if __name__ == '__main__':
     cfg = easydict.EasyDict({
             "algo_name": 'A2C',
-            "env_name": 'CartPole-v0',
-            "n_envs": 8,
+            "env_name": 'BatchMigrationEnv-v0',
+            "n_envs": 100,
             "max_steps": 20000,
             "n_steps":5,
             "gamma":0.99,
@@ -167,7 +201,42 @@ if __name__ == '__main__':
             "device":torch.device(
                 "cuda" if torch.cuda.is_available() else "cpu")
     })
+    
+    number_of_base_state = 64
+    x_base_state = 8
+    y_base_state = 8
+
+    possion_rate_vector = [11,  8, 20,  9, 18, 18,  9, 17, 12, 17,  9, 17, 14, 10,  5,  7, 12,
+            8, 20, 10, 14, 12, 20, 14,  8,  6, 15,  7, 18,  9,  8, 18, 17,  7,
+           11, 11, 13, 14,  8, 18, 13, 17,  6, 18, 17, 18, 18,  7,  9,  6, 12,
+           10,  9,  8, 20, 14, 11, 15, 14,  6,  6, 15, 16, 20]
+
+    env_default_parameters = EnvironmentParameters(trace_start_index=0,
+                                                num_traces=100,
+                                                server_frequency=128.0,  # GHz
+                                                num_base_station=number_of_base_state,
+                                                optical_fiber_trans_rate=500.0,
+                                                backhaul_coefficient=0.02,
+                                                migration_coefficient_low=1.0,
+                                                migration_coefficient_high =3.0,
+                                                server_poisson_rate=possion_rate_vector, client_poisson_rate=2,
+                                                server_task_data_lower_bound=(0.05 * 1000.0 * 1000.0 * 8),
+                                                server_task_data_higher_bound=(5 * 1000.0 * 1000.0 * 8),
+                                                client_task_data_lower_bound=(0.05 * 1000.0 * 1000.0 * 8),
+                                                client_task_data_higher_bound=(5 * 1000.0 * 1000.0 * 8),
+                                                migration_size_low=0.5,
+                                                migration_size_high=100.0,
+                                                ratio_lower_bound=200.0,
+                                                ratio_higher_bound=10000.0,
+                                                map_width=8000.0, map_height=8000.0,
+                                                num_horizon_servers=8, num_vertical_servers=8,
+                                                traces_file_path='./environment/san_traces_coordinate.txt',
+                                                transmission_rates=[60.0, 48.0, 36.0, 24.0, 12.0],  # Mbps
+                                                trace_length=100,
+                                                trace_interval=3,
+                                                is_full_observation=False,
+                                                is_full_action=True)
     # envs = [make_envs(cfg.env_name) for i in range(cfg.n_envs)]
-    # envs = SubprocVecEnv(envs) 
+    envs = BatchMigrationEnv(env_default_parameters)# SubprocVecEnv(envs) 
     rewards,ma_rewards = train(cfg,envs)
     plot_rewards(rewards, ma_rewards, cfg, tag="train") # 画出结果

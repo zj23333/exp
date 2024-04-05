@@ -63,6 +63,7 @@ def test_env(env,model,vis=False):
     while not done:
         state = torch.FloatTensor(state).unsqueeze(0).to(cfg.device)
         dist, _ = model(state)
+        # print("test len: ", len(dist.sample().cpu().numpy()))
         next_state, reward, done, _,_ = env.step(dist.sample().cpu().numpy()[0])
         state = next_state
         if vis: env.render()
@@ -81,16 +82,16 @@ def compute_returns(next_value, rewards, masks, gamma=0.99):
 def train(cfg,envs):
     print('Start training!')
     print(f'Env:{cfg.env_name}, Algorithm:{cfg.algo_name}, Device:{cfg.device}')
-    # env = gym.make(cfg.env_name) # a single env
-    # env.reset(seed=10)
-    # n_states  = envs.observation_space.shape[0]
-    # n_actions = envs.action_space.n
+    env = gym.make(cfg.env_name) # a single env
+    env.reset(seed=10)
+    n_states  = envs.observation_space.shape[0]
+    n_actions = envs.action_space.n
     model = ActorCritic(n_states, n_actions, cfg.hidden_dim).to(cfg.device)
     optimizer = optim.Adam(model.parameters())
     step_idx    = 0
     test_rewards = []
     test_ma_rewards = []
-    # state = envs.reset()    # 这里！
+    state = envs.reset()    # 这里！
     while step_idx < cfg.max_steps:
         log_probs = []
         values    = []
@@ -102,7 +103,10 @@ def train(cfg,envs):
             state = torch.FloatTensor(state).to(cfg.device)
             dist, value = model(state)
             action = dist.sample()
-            # next_state, reward, done, _ = envs.step(action.cpu().numpy())
+            # print("train len: ", len(dist.sample().cpu().numpy()))
+            next_state, reward, done, _ = envs.step(action.cpu().numpy())
+            print("next_state: ", next_state)
+            print("done: ",done, type(done))
             log_prob = dist.log_prob(action)
             entropy += dist.entropy().mean()
             log_probs.append(log_prob)
@@ -162,7 +166,7 @@ if __name__ == '__main__':
             "device":torch.device(
                 "cuda" if torch.cuda.is_available() else "cpu")
     })
-    # envs = [make_envs(cfg.env_name) for i in range(cfg.n_envs)]
-    # envs = SubprocVecEnv(envs) 
+    envs = [make_envs(cfg.env_name) for i in range(cfg.n_envs)]
+    envs = SubprocVecEnv(envs) 
     rewards,ma_rewards = train(cfg,envs)
     plot_rewards(rewards, ma_rewards, cfg, tag="train") # 画出结果
