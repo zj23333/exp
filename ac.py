@@ -9,7 +9,6 @@ import argparse
 import gym
 import datetime
 
-rewards,ma_rewards = train(cfg,envs)
 # 获取当前时间
 current_time = datetime.datetime.now()
 # 格式化时间字符串
@@ -131,7 +130,7 @@ def train(cfg,envs):
     test_ma_rewards = []
     state = envs.reset()    # 这里！
     while step_idx < cfg.max_steps:
-        print(step_idx)
+        print('training step: ',step_idx)
         log_probs = []
         values    = []
         rewards   = []
@@ -254,7 +253,8 @@ if __name__ == '__main__':
                                                 is_full_action=True)
     # envs = [make_envs(cfg.env_name) for i in range(cfg.n_envs)]
     envs = BatchMigrationEnv(env_default_parameters)# SubprocVecEnv(envs) 
-
+    rewards,ma_rewards = train(cfg,envs)
+    
     save_rewards(rewards, ma_rewards, cfg, time_str, tag="train") # 存文件
     plot_rewards(rewards, ma_rewards, cfg, time_str, tag="train") # 画出结果
 
