@@ -131,6 +131,7 @@ def train(cfg,envs):
     test_ma_rewards = []
     state = envs.reset()    # 这里！
     while step_idx < cfg.max_steps:
+        print(step_idx)
         log_probs = []
         values    = []
         rewards   = []
