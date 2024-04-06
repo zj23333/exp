@@ -7,6 +7,13 @@ import numpy as np
 from multiprocessing import Process, Pipe
 import argparse
 import gym
+import datetime
+
+rewards,ma_rewards = train(cfg,envs)
+# 获取当前时间
+current_time = datetime.datetime.now()
+# 格式化时间字符串
+time_str = current_time.strftime("%Y-%m-%d_%H-%M-%S")
 
 # 建立Actor和Critic网络
 class ActorCritic(nn.Module):
@@ -166,11 +173,13 @@ def train(cfg,envs):
         loss.backward()
         optimizer.step()
     print('Finish training！')
+    torch.save(model, time_str+"_model.pt")
     return test_rewards, test_ma_rewards
     
+
 import matplotlib.pyplot as plt
 import seaborn as sns 
-def plot_rewards(rewards, ma_rewards, cfg, tag='train'):
+def plot_rewards(rewards, ma_rewards, cfg, time_str, tag='train'):
     sns.set()
     plt.figure()  # 创建一个图形实例，方便同时多画几个图
     plt.title("learning curve on {} of {} for {}".format(
@@ -179,8 +188,14 @@ def plot_rewards(rewards, ma_rewards, cfg, tag='train'):
     plt.plot(rewards, label='rewards')
     plt.plot(ma_rewards, label='ma rewards')
     plt.legend()
+    plt.savefig(time_str + '.png')
     plt.show()
     
+def save_rewards(rewards, ma_rewards, cfg, time_str, tag='train'):
+    arr_re = np.array(rewards)
+    np.savetxt(time_str + '_rewards.txt', arr_re)
+    arr_ma = np.array(rewards)
+    np.savetxt(time_str + '_ma_rewards.txt', arr_ma)
     
 import easydict
 # from common.multiprocessing_env import SubprocVecEnv
@@ -238,5 +253,7 @@ if __name__ == '__main__':
                                                 is_full_action=True)
     # envs = [make_envs(cfg.env_name) for i in range(cfg.n_envs)]
     envs = BatchMigrationEnv(env_default_parameters)# SubprocVecEnv(envs) 
-    rewards,ma_rewards = train(cfg,envs)
-    plot_rewards(rewards, ma_rewards, cfg, tag="train") # 画出结果
+
+    save_rewards(rewards, ma_rewards, cfg, time_str, tag="train") # 存文件
+    plot_rewards(rewards, ma_rewards, cfg, time_str, tag="train") # 画出结果
+
