@@ -71,8 +71,8 @@ class BatchMigrationEnv(gym.Env):
             self.action_space = self._action_dim
             # 动作空间(_action_spec)：根据 is_full_action 的值，环境的动作空间可以是离散空间，其大小要么是基站的数量（代表所有可能的基站迁移目标），要么是固定的数字6。
         else:
-            self._action_spec = spaces.Discrete(6)  ## TODO 这里要改成3
-            self._action_dim = 6
+            self._action_spec = spaces.Discrete(3)  ## 0不迁移，1迁往1-hop最快的服务器，2迁往当前local server
+            self._action_dim = 3
             self.action_space = self._action_dim
 
         self.migration_size_low = env_parameters.migration_size_low
@@ -87,7 +87,7 @@ class BatchMigrationEnv(gym.Env):
         self.is_full_observation = env_parameters.is_full_observation
         #self._state_dim = 5 + 2 * env_parameters.num_base_station
         if self.is_full_observation:
-            self._state_dim = 2 * env_parameters.num_base_station + 2
+            self._state_dim = env_parameters.num_base_station + 5 # 2 * env_parameters.num_base_station + 2
             self.observation_space = self._state_dim
             # 如果是完全观测：状态向量包括了每个基站的两项信息（可能是例如每个基站的工作负载和可用资源等），加上两个额外的全局信息
         else:
@@ -315,7 +315,6 @@ class BatchMigrationEnv(gym.Env):
             computation_latency = float(server_workload + client_required_frequency) / server.frequence      # 计算时间=(server+client)/frequency
             servers_computation_latencies.append(computation_latency)    # 时间放进server时间数组
 
-
         self._client_required_frequency[trace_id] = client_required_frequency
         self._task_data_volume[trace_id] = task_data_volume
         self._server_workloads[trace_id] = server_workloads
@@ -361,8 +360,23 @@ class BatchMigrationEnv(gym.Env):
         if action != None:    # action是None的时候，做reset
             if self.is_full_action:    # full action一定是true
                 service_index = action
-            else:    # 这里不会运行到 TODO,不是full action，action space为3的时候
-                service_index = self._get_service_index_by_action(action, service_index, user_position_index)
+            else:    ### 0不迁移，1迁往1-hop最快的服务器，2迁往当前local server
+                # 原来的那行 service_index = self._get_service_index_by_action(action, service_index, user_position_index)
+                if action == 2:
+                    service_index = user_position_index
+                elif action == 1:
+                    # servers_computation_latencies 里，看看四邻，还有自己，选最小的，注意边界情况
+                    # +1，-1，+8，-1，判断范围0-63，_get_number_of_hops判断边界情况
+                    idx = int(service_index)
+                    nbrs = [idx-1, idx+1, idx-self.num_horizon_servers, idx+self.num_horizon_servers]
+                    nbrs = [x for x in nbrs if 0 <= x <= 63]
+                    nbrs = [x for x in nbrs if self._get_number_of_hops(service_index, x) == 1]
+                    service_index = np.float64(min(nbrs, key=lambda lbd: servers_computation_latencies[lbd]))
+                elif action == 0:
+                    pass  # 不迁移
+                else:
+                    raise Exception("只允许3种action")
+                    
 
         # state = [self._user_position_index, self._service_index ] + servers_computation_latencies + communication_costs
         # observation = [self._user_position_index] + servers_computation_latencies + communication_costs
@@ -419,7 +433,7 @@ class BatchMigrationEnv(gym.Env):
         self._observation = np.array(batch_observation, dtype=np.float32)
 
         if self.is_full_observation:
-            return self._state
+            return self.extract_system_infomation_from_state(self._state)
         else:
             return self._observation
 
@@ -489,10 +503,11 @@ class BatchMigrationEnv(gym.Env):
             env_infos.append(env_info)
 
         self._state = np.array(states, dtype=np.float32)
-        observations = np.array(observations, dtype=np.float32)
-        rewards = np.array(rewards, dtype=np.float32)
+        self._observation = np.array(observations, dtype=np.float32)
+        self._reward = np.array(rewards, dtype=np.float32)
+        self._done = np.array(dones)
 
         if self.is_full_observation:
-            return np.array(self._state), np.array(rewards), np.array(dones), np.array(env_infos)
+            return self.extract_system_infomation_from_state(self._state), self._reward, self._done, np.array(env_infos)
         else:
-            return np.array(observations), np.array(rewards), np.array(dones), np.array(env_infos)
+            return self._observation, self._reward, self._done, np.array(env_infos)

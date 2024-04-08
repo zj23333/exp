@@ -94,7 +94,7 @@ def train(cfg,envs):
     # env = gym.make(cfg.env_name)   ## 初始化一个测试用 env
     # env.reset(seed=10)
     env_eval_parameters = EnvironmentParameters(trace_start_index=120,
-                                                num_traces=20,
+                                                num_traces=30,
                                                 server_frequency=128.0,  # GHz
                                                 num_base_station=number_of_base_state,
                                                 optical_fiber_trans_rate=500.0,
@@ -250,7 +250,7 @@ if __name__ == '__main__':
                                                 trace_length=100,
                                                 trace_interval=3,
                                                 is_full_observation=False,
-                                                is_full_action=True)
+                                                is_full_action=False)
     # envs = [make_envs(cfg.env_name) for i in range(cfg.n_envs)]
     envs = BatchMigrationEnv(env_default_parameters)# SubprocVecEnv(envs) 
     rewards,ma_rewards = train(cfg,envs)
