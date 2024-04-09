@@ -36,12 +36,12 @@ class ActorCritic(nn.Module):
     def forward(self, x):
         value = self.critic(x)
         probs = self.actor(x)
-        print("------------- x -------------")
-        print(x)
-        print("------------- value -------------")
-        print(value)
-        print("------------- probs -------------")
-        print(probs)
+        #print("------------- x -------------")
+        #print(x)
+        #print("------------- value -------------")
+        #print(value)
+        #print("------------- probs -------------")
+        #print(probs)
         dist  = Categorical(probs)
         return dist, value
 
@@ -124,7 +124,7 @@ def train(cfg,envs):
                                                 trace_length=100,
                                                 trace_interval=3,
                                                 is_full_observation=True,
-                                                is_full_action=False)
+                                                is_full_action=True)
     env = BatchMigrationEnv(env_eval_parameters)  # envs是训练用的，env是测试用的
     ### 
     n_states  = envs.observation_space  # 在我的env里，这个observation_space和action_space都是普通的int
@@ -256,7 +256,7 @@ if __name__ == '__main__':
                                                 trace_length=100,
                                                 trace_interval=3,
                                                 is_full_observation=True,
-                                                is_full_action=False)
+                                                is_full_action=True)
     # envs = [make_envs(cfg.env_name) for i in range(cfg.n_envs)]
     envs = BatchMigrationEnv(env_default_parameters)# SubprocVecEnv(envs) 
     rewards,ma_rewards = train(cfg,envs)
