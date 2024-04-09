@@ -14,8 +14,8 @@ possion_rate_vector = [11,  8, 20,  9, 18, 18,  9, 17, 12, 17,  9, 17, 14, 10,  
        11, 11, 13, 14,  8, 18, 13, 17,  6, 18, 17, 18, 18,  7,  9,  6, 12,
        10,  9,  8, 20, 14, 11, 15, 14,  6,  6, 15, 16, 20]
 
-env_default_parameters = EnvironmentParameters(trace_start_index=0,
-                                                num_traces=100,
+env_default_parameters = EnvironmentParameters(trace_start_index=50,
+                                                num_traces=10,
                                                 server_frequency=128.0,  # GHz
                                                 num_base_station=64,
                                                 optical_fiber_trans_rate=500.0,
@@ -71,6 +71,6 @@ env_eval_parameters = EnvironmentParameters(trace_start_index=120,
 env = BatchMigrationEnv(env_default_parameters)
 eval_env = BatchMigrationEnv(env_eval_parameters)
 
-act0=[0]*100
-act1=[1]*100
-act2=[2]*100
+act0=[0]*10
+act1=[1]*10
+act2=[2]*10

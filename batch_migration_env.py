@@ -451,10 +451,7 @@ class BatchMigrationEnv(gym.Env):
     def step_trace(self, trace_id, action):
         # first, calculating the computatio cost of each service node
         # user_profile, service_workloads, servers_num_of_hops = self._get_info_from_current_state()
-
-        computation_cost = self._state[trace_id][2+action]
-        communication_migration_cost = self._state[trace_id][2+self._num_base_station +action]
-
+    
         # print("————————step trace ------")
         # print("env action : ", action)
         # print("get current system info: ", self.current_system_state())
@@ -477,8 +474,12 @@ class BatchMigrationEnv(gym.Env):
         #
         # print("step_trace: "+str(trace_id) + ": ", self._state[trace_id])
         # print("step_trace: "+str(trace_id) + " action: ", action)
-
-        reward = self._reward_func((computation_cost + communication_migration_cost))
+    
+        # state = [user_position_index, service_index] + servers_computation_latencies + communication_costs + \
+        #        [trans_rate, client_required_frequency, task_data_volume] + server_workloads
+        # observation = [user_position_index, trans_rate, task_data_volume, client_required_frequency]
+        # self._state = np.array(states, dtype=np.float32)  # 是100个state的数组，代表100个车
+        
 
         self._current_time_slot[trace_id] = self._current_time_slot[trace_id] + 1
         if self._current_time_slot[trace_id] == self._total_time_slot_length:
@@ -487,6 +488,14 @@ class BatchMigrationEnv(gym.Env):
         else:
             done = False
             state, observation = self._make_state_according_to_action(trace_id, action=action)
+            
+        ##################### 改了action，以及cost在make_state之后算了
+        p = round(self._state[trace_id][1])
+        # print('p: ', p)
+        # print('type(p): ', type(p))
+        computation_cost = self._state[trace_id][2+p]
+        communication_migration_cost = self._state[trace_id][2+self._num_base_station +p]
+        reward = self._reward_func((computation_cost + communication_migration_cost))
 
         return state, observation, reward, done, state
 
