@@ -87,7 +87,7 @@ class BatchMigrationEnv(gym.Env):
         self.is_full_observation = env_parameters.is_full_observation
         #self._state_dim = 5 + 2 * env_parameters.num_base_station
         if self.is_full_observation:
-            self._state_dim = env_parameters.num_base_station + 5 # 2 * env_parameters.num_base_station + 2
+            self._state_dim = 197 # 2 * env_parameters.num_base_station + 2
             self.observation_space = self._state_dim
             # 如果是完全观测：状态向量包括了每个基站的两项信息（可能是例如每个基站的工作负载和可用资源等），加上两个额外的全局信息
         else:
@@ -433,7 +433,7 @@ class BatchMigrationEnv(gym.Env):
         self._observation = np.array(batch_observation, dtype=np.float32)
 
         if self.is_full_observation:
-            return self.extract_system_infomation_from_state(self._state)
+            return self._state
         else:
             return self._observation
 
@@ -508,6 +508,6 @@ class BatchMigrationEnv(gym.Env):
         self._done = np.array(dones)
 
         if self.is_full_observation:
-            return self.extract_system_infomation_from_state(self._state), self._reward, self._done, np.array(env_infos)
+            return self._state, self._reward, self._done, np.array(env_infos)
         else:
             return self._observation, self._reward, self._done, np.array(env_infos)

@@ -154,7 +154,7 @@ def train(cfg,envs):
             masks.append(torch.FloatTensor(1 - done).unsqueeze(1).to(cfg.device))
             state = next_state
             step_idx += 1
-            if step_idx % 200 == 0:  # 每200个step，测试一下
+            if step_idx % 100 == 0:  # 每200个step，测试一下
                 test_reward = np.mean(test_env(env,model)) # np.mean([test_env(env,model) for _ in range(10)])
                 print(f"step_idx:{step_idx}, test_reward:{test_reward}")
                 test_rewards.append(test_reward)
