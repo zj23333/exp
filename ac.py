@@ -36,6 +36,12 @@ class ActorCritic(nn.Module):
     def forward(self, x):
         value = self.critic(x)
         probs = self.actor(x)
+        print("------------- x -------------")
+        print(x)
+        print("------------- value -------------")
+        print(value)
+        print("------------- probs -------------")
+        print(probs)
         dist  = Categorical(probs)
         return dist, value
 
