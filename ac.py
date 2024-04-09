@@ -122,7 +122,7 @@ def train(cfg,envs):
                                                 trace_length=100,
                                                 trace_interval=12,
                                                 is_full_observation=False,
-                                                is_full_action=True)
+                                                is_full_action=False)
     env = BatchMigrationEnv(env_eval_parameters)  # envs是训练用的，env是测试用的
     ### 
     n_states  = envs.observation_space  # 在我的env里，这个observation_space和action_space都是普通的int
@@ -254,7 +254,7 @@ if __name__ == '__main__':
                                                 trace_length=100,
                                                 trace_interval=12,
                                                 is_full_observation=False,
-                                                is_full_action=True)
+                                                is_full_action=False)
     # envs = [make_envs(cfg.env_name) for i in range(cfg.n_envs)]
     envs = BatchMigrationEnv(env_default_parameters)# SubprocVecEnv(envs) 
     rewards,ma_rewards = train(cfg,envs)
