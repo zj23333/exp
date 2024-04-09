@@ -117,10 +117,10 @@ def train(cfg,envs):
                                                 ratio_higher_bound=10000.0,
                                                 map_width=8000.0, map_height=8000.0,
                                                 num_horizon_servers=x_base_state, num_vertical_servers=y_base_state,
-                                                traces_file_path='./environment/san_traces_coordinate.txt',
+                                                traces_file_path='./environment/rome_traces_coordinate.txt',
                                                 transmission_rates=[60.0, 48.0, 36.0, 24.0, 12.0],  # Mbps
                                                 trace_length=100,
-                                                trace_interval=3,
+                                                trace_interval=12,
                                                 is_full_observation=True,
                                                 is_full_action=True)
     env = BatchMigrationEnv(env_eval_parameters)  # envs是训练用的，env是测试用的
@@ -249,10 +249,10 @@ if __name__ == '__main__':
                                                 ratio_higher_bound=10000.0,
                                                 map_width=8000.0, map_height=8000.0,
                                                 num_horizon_servers=8, num_vertical_servers=8,
-                                                traces_file_path='./environment/san_traces_coordinate.txt',
+                                                traces_file_path='./environment/rome_traces_coordinate.txt',
                                                 transmission_rates=[60.0, 48.0, 36.0, 24.0, 12.0],  # Mbps
                                                 trace_length=100,
-                                                trace_interval=3,
+                                                trace_interval=12,
                                                 is_full_observation=True,
                                                 is_full_action=True)
     # envs = [make_envs(cfg.env_name) for i in range(cfg.n_envs)]
