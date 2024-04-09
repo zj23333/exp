@@ -211,7 +211,7 @@ if __name__ == '__main__':
             "max_steps": 20000,
             "n_steps":5,
             "gamma":0.99,
-            "lr": 1e-4,  # Tensor 里有nan，所以降低学习率的数量级，如果还报错，就再降  ValueError: Expected parameter probs (Tensor of shape (1, 30, 3)) of distribution Categorical(probs: torch.Size([1, 30, 3])) to satisfy the constraint Simplex(), but found invalid values:
+            "lr": 1e-6,  # Tensor 里有nan，所以降低学习率的数量级，如果还报错，就再降  ValueError: Expected parameter probs (Tensor of shape (1, 30, 3)) of distribution Categorical(probs: torch.Size([1, 30, 3])) to satisfy the constraint Simplex(), but found invalid values:
             "hidden_dim": 256,
             "device":torch.device(
                 "cuda" if torch.cuda.is_available() else "cpu")
