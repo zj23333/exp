@@ -121,7 +121,7 @@ def train(cfg,envs):
                                                 transmission_rates=[60.0, 48.0, 36.0, 24.0, 12.0],  # Mbps
                                                 trace_length=100,
                                                 trace_interval=12,
-                                                is_full_observation=True,
+                                                is_full_observation=False,
                                                 is_full_action=True)
     env = BatchMigrationEnv(env_eval_parameters)  # envs是训练用的，env是测试用的
     ### 
@@ -231,7 +231,7 @@ if __name__ == '__main__':
            10,  9,  8, 20, 14, 11, 15, 14,  6,  6, 15, 16, 20]
 
     env_default_parameters = EnvironmentParameters(trace_start_index=0,
-                                                num_traces=100,
+                                                num_traces=120,
                                                 server_frequency=128.0,  # GHz
                                                 num_base_station=number_of_base_state,
                                                 optical_fiber_trans_rate=500.0,
@@ -253,7 +253,7 @@ if __name__ == '__main__':
                                                 transmission_rates=[60.0, 48.0, 36.0, 24.0, 12.0],  # Mbps
                                                 trace_length=100,
                                                 trace_interval=12,
-                                                is_full_observation=True,
+                                                is_full_observation=False,
                                                 is_full_action=True)
     # envs = [make_envs(cfg.env_name) for i in range(cfg.n_envs)]
     envs = BatchMigrationEnv(env_default_parameters)# SubprocVecEnv(envs) 

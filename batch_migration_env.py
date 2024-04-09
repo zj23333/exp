@@ -399,6 +399,8 @@ class BatchMigrationEnv(gym.Env):
           # 沿着数组的最后一个维度，即列维度，连接 positions_vector、client_side_vector 和 server_workloads 这三个数组，生成一个新的数组
         # 举例来说，假设有两个二维数组 A 和 B，它们的形状分别为 (m, n) 和 (m, p)，其中 m 表示行数，n 和 p 分别表示 A 和 B 的列数。若沿着最后一个维度进行连接，即列维度，那么 A 和 B 将会在列方向上进行连接，生成一个新的数组，新数组的形状为 (m, n + p)。
         # 在 NumPy 中，axis=-1 表示沿着最后一个维度进行操作，即列维度。
+        # state = [user_position_index, service_index] + servers_computation_latencies + communication_costs + \
+        #        [trans_rate, client_required_frequency, task_data_volume] + server_workloads
 
         return system_info_vector
 
