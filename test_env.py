@@ -74,3 +74,6 @@ eval_env = BatchMigrationEnv(env_eval_parameters)
 act0=[0]*10
 act1=[1]*10
 act2=[2]*10
+
+state = env.reset()
+state, reward, done, _ = env.step(act1)

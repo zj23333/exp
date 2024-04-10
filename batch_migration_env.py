@@ -372,6 +372,11 @@ class BatchMigrationEnv(gym.Env):
                     nbrs = [x for x in nbrs if 0 <= x <= 63]
                     nbrs = [x for x in nbrs if self._get_number_of_hops(service_index, x) == 1]
                     service_index = np.float64(min(nbrs, key=lambda lbd: servers_computation_latencies[lbd]))
+                    #print('idx: ', idx)
+                    #print('nbrs: ', nbrs)
+                    #for i in nbrs:
+                    #  print(i, ' -> ', servers_computation_latencies[i], ' + ', communication_costs[i])
+                    #print('service_index: ', service_index)
                 elif action == 0:
                     pass  # 不迁移
                 else:
@@ -490,12 +495,17 @@ class BatchMigrationEnv(gym.Env):
             state, observation = self._make_state_according_to_action(trace_id, action=action)
             
         ##################### 改了action，以及cost在make_state之后算了
-        p = round(self._state[trace_id][1])
+        p = round(state[1])
         # print('p: ', p)
         # print('type(p): ', type(p))
-        computation_cost = self._state[trace_id][2+p]
-        communication_migration_cost = self._state[trace_id][2+self._num_base_station +p]
+        computation_cost = state[2+p]
+        communication_migration_cost = state[2+self._num_base_station +p]
         reward = self._reward_func((computation_cost + communication_migration_cost))
+        #print('step_trace>>> p: ', p)
+        #print('step_trace>>> computation_cost: ', computation_cost)
+        #print('step_trace>>> communication_migration_cost: ', communication_migration_cost)
+        #print('step_trace>>> reward: ', reward)
+        #print('step_trace>>> trace_id: ', trace_id, ' , reward: ', reward)
 
         return state, observation, reward, done, state
 
@@ -509,7 +519,9 @@ class BatchMigrationEnv(gym.Env):
             state, observation, reward, done, env_info = self.step_trace(trace_id=i, action=action[i])
             states.append(state)
             observations.append(observation)
+            #print('step>>> i: ', i, ' , reward: ', reward)
             rewards.append(reward)
+            #print('step>>> rewards: ', rewards)
             dones.append(done)
             env_infos.append(env_info)
 
