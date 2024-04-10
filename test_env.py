@@ -74,8 +74,11 @@ eval_env = BatchMigrationEnv(env_eval_parameters)
 act0=[0]*10
 act1=[1]*10
 act2=[2]*10
+act012=[0,1,2]*10
 
 state = env.reset()
 state, reward, done, _ = env.step(act1)
 
 state = eval_env.reset()
+#exec(open("test_env.py",encoding='utf-8').read())
+#np.average(reward)
