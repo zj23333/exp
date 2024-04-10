@@ -77,7 +77,7 @@ def test_env(env,model): #,vis=False):
         dist, _ = model(state)
         #print(dist.sample().cpu().numpy())
         #print(type(dist.sample().cpu().numpy()))
-        next_state, reward, done, _ = env.step([0]*30)#dist.sample().cpu().numpy()[0])
+        next_state, reward, done, _ = env.step([1]*30)#dist.sample().cpu().numpy()[0])
         state = next_state
         # if vis: env.render()
         total_reward += np.array(reward)
