@@ -153,7 +153,7 @@ def train(cfg,envs):
     n_states  = envs.observation_space  # 在我的env里，这个observation_space和action_space都是普通的int
     n_actions = envs.action_space
     # def __init__(self, state_dim, hidden_dim, action_dim, actor_lr, critic_lr, gamma, device):
-    agent = ActorCritic(n_states, cfg.hidden_dim, n_actions, 1e-3, 1e-2, 0.99, cfg.device)
+    agent = ActorCritic(n_states, cfg.hidden_dim, n_actions, 1e-3, 1e-2, 0.8, cfg.device)
     step_idx    = 0
     test_rewards = []
     test_ma_rewards = []
