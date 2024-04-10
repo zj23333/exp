@@ -77,7 +77,7 @@ def test_env(env,model): #,vis=False):
         dist, _ = model(state)
         #print(dist.sample().cpu().numpy())
         #print(type(dist.sample().cpu().numpy()))
-        next_state, reward, done, _ = env.step(dist.sample().cpu().numpy()[0])
+        next_state, reward, done, _ = env.step([0]*30)#dist.sample().cpu().numpy()[0])
         state = next_state
         # if vis: env.render()
         total_reward += np.array(reward)
@@ -123,7 +123,7 @@ def train(cfg,envs):
                                                 trace_interval=12,
                                                 is_full_observation=False,
                                                 is_full_action=False)
-    env = BatchMigrationEnv(env_eval_parameters)  # envs是训练用的，env是测试用的
+    eval_env = BatchMigrationEnv(env_eval_parameters)  # envs是训练用的，eval_env是测试用的
     ### 
     n_states  = envs.observation_space  # 在我的env里，这个observation_space和action_space都是普通的int
     n_actions = envs.action_space
@@ -154,8 +154,8 @@ def train(cfg,envs):
             masks.append(torch.FloatTensor(1 - done).unsqueeze(1).to(cfg.device))
             state = next_state
             step_idx += 1
-            if step_idx % 100 == 0:  # 每200个step，测试一下
-                test_reward = np.mean(test_env(env,model)) # np.mean([test_env(env,model) for _ in range(10)])
+            if step_idx % 100 == 0:  # 每100个step，测试一下
+                test_reward = np.mean(test_env(eval_env,model)) # np.mean([test_env(env,model) for _ in range(10)])
                 print(f"step_idx:{step_idx}, test_reward:{test_reward}")
                 test_rewards.append(test_reward)
                 if test_ma_rewards:

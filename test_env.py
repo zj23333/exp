@@ -64,8 +64,8 @@ env_eval_parameters = EnvironmentParameters(trace_start_index=120,
                                                 transmission_rates=[60.0, 48.0, 36.0, 24.0, 12.0],  # Mbps
                                                 trace_length=100,
                                                 trace_interval=3,
-                                                is_full_observation=False,
-                                                is_full_action=True)
+                                                is_full_observation=True,
+                                                is_full_action=False)
 
 
 env = BatchMigrationEnv(env_default_parameters)
@@ -77,3 +77,5 @@ act2=[2]*10
 
 state = env.reset()
 state, reward, done, _ = env.step(act1)
+
+state = eval_env.reset()
