@@ -12,6 +12,8 @@
         <filter
           name="Python"/>
       </watched>
+      <file
+        name="a2c_2nets.py"/>
       <dir
         name="common"/>
       <dir
