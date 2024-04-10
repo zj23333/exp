@@ -172,8 +172,8 @@ def train(cfg,envs):
         advantage = returns - values
         actor_loss  = -(log_probs * advantage.detach()).mean()
         critic_loss = advantage.pow(2).mean()
-        # loss = actor_loss + 0.5 * critic_loss - 0.001 * entropy  # 原来是这么写的
-        loss = actor_loss + critic_loss - 0.001 * entropy
+        loss = actor_loss + 0.5 * critic_loss - 0.001 * entropy  # 原来是这么写的
+        # loss = actor_loss + critic_loss - 0.001 * entropy  # 陶博让我这么写的
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
@@ -216,7 +216,7 @@ if __name__ == '__main__':
             "max_steps": 20000,
             "n_steps":5,
             "gamma":0.99,
-            "lr": 1e-3,  # Tensor 里有nan，所以降低学习率的数量级，如果还报错，就再降  ValueError: Expected parameter probs (Tensor of shape (1, 30, 3)) of distribution Categorical(probs: torch.Size([1, 30, 3])) to satisfy the constraint Simplex(), but found invalid values:
+            "lr": 1e-4,  # Tensor 里有nan，所以降低学习率的数量级，如果还报错，就再降  ValueError: Expected parameter probs (Tensor of shape (1, 30, 3)) of distribution Categorical(probs: torch.Size([1, 30, 3])) to satisfy the constraint Simplex(), but found invalid values:
             "hidden_dim": 256,
             "device":torch.device(
                 "cuda" if torch.cuda.is_available() else "cpu")
