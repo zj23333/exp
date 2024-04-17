@@ -295,6 +295,9 @@ class BatchMigrationEnv(gym.Env):
         # generate_client_task
         client_required_frequency, task_data_volume = self._generate_client_work_loads()    # 生成新的workload
 
+        #print('trace_id: ', trace_id)
+        #print('self._current_time_slot[trace_id]: ', self._current_time_slot[trace_id])
+        #print('len(users_traces[trace_id]): ', len(self.users_traces[trace_id]))
         user_position = self.users_traces[trace_id][self._current_time_slot[trace_id]]
         user_position_index = self._get_user_area_by_position(user_position)      # user目前的local server
 
