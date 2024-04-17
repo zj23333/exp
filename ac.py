@@ -117,7 +117,7 @@ def train(cfg,envs):
                                                 ratio_higher_bound=10000.0,
                                                 map_width=8000.0, map_height=8000.0,
                                                 num_horizon_servers=x_base_state, num_vertical_servers=y_base_state,
-                                                traces_file_path='./environment/sans_traces_coordinate.txt',
+                                                traces_file_path='./environment/san_traces_coordinate.txt',
                                                 transmission_rates=[60.0, 48.0, 36.0, 24.0, 12.0],  # Mbps
                                                 trace_length=100,
                                                 trace_interval=12,
@@ -250,7 +250,7 @@ if __name__ == '__main__':
                                                 ratio_higher_bound=10000.0,
                                                 map_width=8000.0, map_height=8000.0,
                                                 num_horizon_servers=8, num_vertical_servers=8,
-                                                traces_file_path='./environment/sans_traces_coordinate.txt',
+                                                traces_file_path='./environment/san_traces_coordinate.txt',
                                                 transmission_rates=[60.0, 48.0, 36.0, 24.0, 12.0],  # Mbps
                                                 trace_length=100,
                                                 trace_interval=12,
