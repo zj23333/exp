@@ -154,7 +154,7 @@ def train(cfg,envs):
             masks.append(torch.FloatTensor(1 - done).unsqueeze(1).to(cfg.device))
             state = next_state
             step_idx += 1
-            if step_idx % 100 == 0:  # 每100个step，测试一下
+            if step_idx % 20 == 0:  # 每100个step，测试一下
                 test_reward = np.mean(test_env(eval_env,model)) # np.mean([test_env(env,model) for _ in range(10)])
                 print(f"step_idx:{step_idx}, test_reward:{test_reward}")
                 test_rewards.append(test_reward)
@@ -213,7 +213,7 @@ if __name__ == '__main__':
             "algo_name": 'A2C',
             "env_name": 'BatchMigrationEnv-v0',
             "n_envs": 100,
-            "max_steps": 20000,
+            "max_steps": 2000,
             "n_steps":5,
             "gamma":0.99,
             "lr": 1e-4,  # Tensor 里有nan，所以降低学习率的数量级，如果还报错，就再降  ValueError: Expected parameter probs (Tensor of shape (1, 30, 3)) of distribution Categorical(probs: torch.Size([1, 30, 3])) to satisfy the constraint Simplex(), but found invalid values:
