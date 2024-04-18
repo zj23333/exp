@@ -145,7 +145,7 @@ def train(cfg,envs):
                                                 traces_file_path='./environment/rome_traces_coordinate.txt',
                                                 transmission_rates=[60.0, 48.0, 36.0, 24.0, 12.0],  # Mbps
                                                 trace_length=100,
-                                                trace_interval=3,
+                                                trace_interval=12,
                                                 is_full_observation=False,
                                                 is_full_action=True)
     env = BatchMigrationEnv(env_eval_parameters)  # envs是训练用的，env是测试用的
@@ -263,7 +263,7 @@ if __name__ == '__main__':
                                                 traces_file_path='./environment/rome_traces_coordinate.txt',
                                                 transmission_rates=[60.0, 48.0, 36.0, 24.0, 12.0],  # Mbps
                                                 trace_length=100,
-                                                trace_interval=3,
+                                                trace_interval=12,
                                                 is_full_observation=False,
                                                 is_full_action=True)
     # envs = [make_envs(cfg.env_name) for i in range(cfg.n_envs)]
